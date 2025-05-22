@@ -2,14 +2,7 @@
 ---
 Geodatos y cartografía del vino de Rioja. Geodata curation about Rioja wine.
 <br />
-## DATOS GEORREFERENCIADOS DOCaRioja
-[Municipios](https://github.com/mapeandoelrioja/geodatos/tree/main/municipios)
 <br />
-[Zonas](https://github.com/mapeandoelrioja/geodatos/tree/main/zonas)
-<br />
-[Recintos SIGPAC de viñedo](https://github.com/mapeandoelrioja/geodatos/tree/main/vi%C3%B1edo)
-<br />
-## MAPAS
 ![](https://raw.githubusercontent.com/mapeandoelrioja/simbologia/master/_/mapa_18.png) [Mapa de municipios DOCaRioja](https://mapeandoelrioja.github.io/geodatos/municipios/docarioja_municipios)
 <br />
 ### ![](https://raw.githubusercontent.com/mapeandoelrioja/simbologia/master/_/mapa_18.png) Rioja Alta
