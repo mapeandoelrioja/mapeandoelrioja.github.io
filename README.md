@@ -23,10 +23,10 @@ Geodatos y cartografía del vino de Rioja. Geodata curation about Rioja wine.
 <br /><br />
 ---
 <br />
-![](https://raw.githubusercontent.com/mapeandoelrioja/simbologia/main/_/twitter_18.png"@mapeandoElRioja") [@mapeandoElRioja](https://bsky.app/profile/mapeandoelrioja.bsky.social)  
+![](https://raw.githubusercontent.com/mapeandoelrioja/simbologia/main/_/bluesky_18.png) [@mapeandoElRioja](https://bsky.app/profile/mapeandoelrioja.bsky.social)  
 [Licencia: Creative Commons CC BY 4.0](https://github.com/mapeandoelrioja/mapeandoelrioja.github.io/blob/main/LICENCIA.ES.md)
 <br />
-*Edición: ![](https://raw.githubusercontent.com/mapeandoelrioja/simbologia/main/_/twitter_18.png"@gonzalo_lpgc") [@gonzalo_lpgc](https://twitter.com/gonzalo_lpgc)*
+*Edición: ![](https://raw.githubusercontent.com/mapeandoelrioja/simbologia/main/_/bluesky_18.png) [@gonzalo_lpgc](https://bsky.app/profile/gonzalolopez.bsky.social)*
 <br /><br />
 \*Notas
 <br />
