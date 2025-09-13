@@ -21,7 +21,7 @@ var style_Bodegas_2 = function(feature, resolution){
         labelText = String("");
     }
     var style = [ new ol.style.Style({
-        image: new ol.style.RegularShape({radius: 4.0 + size, points: 4,
+        image: new ol.style.RegularShape({radius: 8.0 + size, points: 4,
             angle: Math.PI/4, displacement: [0, 0], stroke: new ol.style.Stroke({color: 'rgba(119,16,101,1.0)', lineDash: null, lineCap: 'butt', lineJoin: 'miter', width: 1.52}), fill: new ol.style.Fill({color: 'rgba(241,243,35,1.0)'})}),
         text: createTextStyle(feature, resolution, labelText, labelFont,
                               labelFill, placement, bufferColor,
