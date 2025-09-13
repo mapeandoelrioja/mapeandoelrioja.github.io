@@ -40,7 +40,7 @@ var lyr_Bodegas_2 = new ol.layer.Vector({
 
 lyr_Satlite_0.setVisible(false);lyr_Mapa_1.setVisible(true);lyr_Bodegas_2.setVisible(true);
 var layersList = [lyr_Satlite_0,lyr_Mapa_1,lyr_Bodegas_2];
-lyr_Bodegas_2.set('fieldAliases', {'nombre': 'nombre', 'telefono': 'Teléfono', 'direccion': 'Dirección', 'municipio': 'Municipio', 'provincia': 'Provincia', 'geocodigo': 'Ubicación', 'web': 'Página web', 'visitas': 'Visitas', 'hospedaje': 'Hospedaje', 'riojawine': 'Web Riojawine', });
+lyr_Bodegas_2.set('fieldAliases', {'nombre': 'Nombre', 'telefono': 'Teléfono', 'direccion': 'Dirección', 'municipio': 'Municipio', 'provincia': 'Provincia', 'geocodigo': 'Ubicación', 'web': 'Página web', 'visitas': 'Visitas', 'hospedaje': 'Hospedaje', 'riojawine': 'Web Riojawine', });
 lyr_Bodegas_2.set('fieldImages', {'nombre': 'TextEdit', 'telefono': 'TextEdit', 'direccion': 'TextEdit', 'municipio': 'TextEdit', 'provincia': 'TextEdit', 'geocodigo': 'TextEdit', 'web': 'TextEdit', 'visitas': 'TextEdit', 'hospedaje': 'TextEdit', 'riojawine': 'TextEdit', });
 lyr_Bodegas_2.set('fieldLabels', {'nombre': 'inline label - always visible', 'telefono': 'inline label - always visible', 'direccion': 'inline label - always visible', 'municipio': 'inline label - always visible', 'provincia': 'inline label - always visible', 'geocodigo': 'inline label - always visible', 'web': 'inline label - always visible', 'visitas': 'inline label - visible with data', 'hospedaje': 'inline label - always visible', 'riojawine': 'inline label - always visible', });
 lyr_Bodegas_2.on('precompose', function(evt) {
