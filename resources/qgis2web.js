@@ -491,7 +491,7 @@ var Abstract = new ol.control.Control({
 
         var linkElement = document.createElement('a');
 
-        if (59 > 240) {
+        if (48 > 240) {
             linkElement.setAttribute("onmouseenter", "showAbstract()");
             linkElement.setAttribute("onmouseleave", "hideAbstract()");
             linkElement.innerHTML = 'i';
@@ -505,13 +505,13 @@ var Abstract = new ol.control.Control({
             window.showAbstract = function() {
                 linkElement.classList.remove("project-abstract");
                 linkElement.classList.add("project-abstract-uncollapsed");
-                linkElement.innerHTML = 'Pulsar la tecla retroceso [←] después del texto de búsqueda';
+                linkElement.innerHTML = 'Búsqueda: Pulsar retroceso [←] después del texto';
             }
 
             hideAbstract();
         } else {
             linkElement.classList.add("project-abstract-uncollapsed");
-            linkElement.innerHTML = 'Pulsar la tecla retroceso [←] después del texto de búsqueda';
+            linkElement.innerHTML = 'Búsqueda: Pulsar retroceso [←] después del texto';
         }
 
         titleElement.appendChild(linkElement);
