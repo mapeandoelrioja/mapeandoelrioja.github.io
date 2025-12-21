@@ -6,37 +6,15 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="./resources/ol.css">
-        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
-        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-        <link rel="stylesheet" href="./resources/qgis2web.css">
-        <style>
-        html, body {
-            background-color: #ffffff;
-        }
-        .ol-control > * {
-            background-color: #f8f8f8!important;
-            color: #444444!important;
-            border-radius: 0px;
-        }
-        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
-            color: #444444!important;
-        }
-        .search-layer-input-search {
-            background-color: #f8f8f8!important;
-        }
-        .ol-control > *:focus, .ol-control >*:hover {
-            background-color: rgba(248, 248, 248, 0.7)!important;
-        } 
-        .ol-control {
-            background-color: rgba(255,255,255,.4) !important;
-            padding: 2px !important;
-        } 
-        </style>
-
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
         <style>
         html, body, #map {
             width: 100%;
@@ -45,26 +23,496 @@
             margin: 0;
         }
         </style>
-        <title>DOCa Rioja</title>
+        <title></title>
     </head>
     <body>
         <div id="map">
-            <div id="popup" class="ol-popup">
-                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-                <div id="popup-content"></div>
-            </div>
         </div>
-        <script src="resources/qgis2web_expressions.js"></script>
-        <script src="./resources/functions.js"></script>
-        <script src="./resources/ol.js"></script>
-        <script src="resources/horsey.min.js"></script>
-        <script src="resources/ol-search-layer.js"></script>
-        <script src="./resources/ol-layerswitcher.js"></script>
-        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
-        <script src="layers/Bodegas_2.js"></script>
-        <script src="styles/Bodegas_2_style.js"></script>
-        <script src="./layers/layers.js" type="text/javascript"></script> 
-        <script src="./resources/Autolinker.min.js"></script>
-        <script src="./resources/qgis2web.js"></script>        
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Bodegas_2.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: 'rgba(255, 255, 0, 1.00)',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: 'rgba(255, 255, 0, 1.00)',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var abstract = new L.Control({'position':'bottomleft'});
+        abstract.onAdd = function (map) {
+            this._div = L.DomUtil.create('div',
+            'leaflet-control abstract');
+            this._div.id = 'abstract'
+
+                abstract.show();
+                return this._div;
+            };
+            abstract.show = function () {
+                this._div.classList.remove("abstract");
+                this._div.classList.add("abstractUncollapsed");
+                this._div.innerHTML = 'Bodegas DOCaRioja';
+        };
+        abstract.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+            map.setMaxBounds(map.getBounds());
+            map.setMinZoom(map.getZoom());
+        }
+        map.createPane('pane_Ortofoto_0');
+        map.getPane('pane_Ortofoto_0').style.zIndex = 400;
+        var layer_Ortofoto_0 = L.tileLayer('https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{-y}.jpeg', {
+            pane: 'pane_Ortofoto_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 18
+        });
+        layer_Ortofoto_0;
+        map.createPane('pane_Mapa_1');
+        map.getPane('pane_Mapa_1').style.zIndex = 401;
+        var layer_Mapa_1 = L.tileLayer('https://rts.larioja.org/rioja-relieve/{z}/{x}/{y}.png', {
+            pane: 'pane_Mapa_1',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 22
+        });
+        layer_Mapa_1;
+        map.addLayer(layer_Mapa_1);
+        function pop_Bodegas_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">nombre</th>\
+                        <td>' + (feature.properties['nombre'] !== null ? autolinker.link(String(feature.properties['nombre']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">telefono</th>\
+                        <td>' + (feature.properties['telefono'] !== null ? autolinker.link(String(feature.properties['telefono']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">direccion</th>\
+                        <td>' + (feature.properties['direccion'] !== null ? autolinker.link(String(feature.properties['direccion']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">municipio</th>\
+                        <td>' + (feature.properties['municipio'] !== null ? autolinker.link(String(feature.properties['municipio']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">provincia</th>\
+                        <td>' + (feature.properties['provincia'] !== null ? autolinker.link(String(feature.properties['provincia']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">geocodigo</th>\
+                        <td>' + (feature.properties['geocodigo'] !== null ? autolinker.link(String(feature.properties['geocodigo']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">web</th>\
+                        <td>' + (feature.properties['web'] !== null ? autolinker.link(String(feature.properties['web']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">visitas</th>\
+                        <td>' + (feature.properties['visitas'] !== null ? autolinker.link(String(feature.properties['visitas']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">hospedaje</th>\
+                        <td>' + (feature.properties['hospedaje'] !== null ? autolinker.link(String(feature.properties['hospedaje']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">riojawine</th>\
+                        <td>' + (feature.properties['riojawine'] !== null ? autolinker.link(String(feature.properties['riojawine']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Bodegas_2_0() {
+            return {
+                pane: 'pane_Bodegas_2',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Bodegas_2');
+        map.getPane('pane_Bodegas_2').style.zIndex = 402;
+        map.getPane('pane_Bodegas_2').style['mix-blend-mode'] = 'normal';
+        var layer_Bodegas_2 = new L.geoJson(json_Bodegas_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Bodegas_2',
+            layerName: 'layer_Bodegas_2',
+            pane: 'pane_Bodegas_2',
+            onEachFeature: pop_Bodegas_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Bodegas_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Bodegas_2);
+        map.addLayer(layer_Bodegas_2);
+        var overlaysTree = [
+            {label: '<img src="legend/Bodegas_2.png" /> Bodegas', layer: layer_Bodegas_2},
+            {label: "Mapa", layer: layer_Mapa_1, radioGroup: 'bm' },
+            {label: "Ortofoto", layer: layer_Ortofoto_0, radioGroup: 'bm' },]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_Bodegas_2,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'nombre'}));
+        if (typeof url === 'undefined') {
+            document.getElementsByClassName('search-button')[0].className += ' fa fa-binoculars';
+        } else {
+            document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
+        }
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"municipio": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_municipio = document.createElement('div');
+            div_municipio.id = "div_municipio";
+            div_municipio.className= "filterselect";
+            document.getElementById("menu").appendChild(div_municipio);
+            sel_municipio = document.createElement('select');
+            sel_municipio.multiple = true;
+            sel_municipio.size = 10;
+            sel_municipio.id = "sel_municipio";
+            var municipio_options_str = "<option value='' unselected></option>";
+            sel_municipio.onchange = function(){filterFunc()};
+            municipio_options_str  += '<option value="Agoncillo">Agoncillo</option>';
+            municipio_options_str  += '<option value="Albelda de Iregua">Albelda de Iregua</option>';
+            municipio_options_str  += '<option value="Alberite">Alberite</option>';
+            municipio_options_str  += '<option value="Alcanadre">Alcanadre</option>';
+            municipio_options_str  += '<option value="Aldeanueva de Ebro">Aldeanueva de Ebro</option>';
+            municipio_options_str  += '<option value="Alesanco">Alesanco</option>';
+            municipio_options_str  += '<option value="Alfaro">Alfaro</option>';
+            municipio_options_str  += '<option value="Andosilla">Andosilla</option>';
+            municipio_options_str  += '<option value="Anguciana">Anguciana</option>';
+            municipio_options_str  += '<option value="Aras">Aras</option>';
+            municipio_options_str  += '<option value="Arenzana de Abajo">Arenzana de Abajo</option>';
+            municipio_options_str  += '<option value="Arnedo">Arnedo</option>';
+            municipio_options_str  += '<option value="Ausejo">Ausejo</option>';
+            municipio_options_str  += '<option value="Autol">Autol</option>';
+            municipio_options_str  += '<option value="Azagra">Azagra</option>';
+            municipio_options_str  += '<option value="Azofra">Azofra</option>';
+            municipio_options_str  += '<option value="Badarán">Badarán</option>';
+            municipio_options_str  += '<option value="Bargota">Bargota</option>';
+            municipio_options_str  += '<option value="Baños de Ebro/Mañueta">Baños de Ebro/Mañueta</option>';
+            municipio_options_str  += '<option value="Baños de Rioja">Baños de Rioja</option>';
+            municipio_options_str  += '<option value="Baños de Río Tobía">Baños de Río Tobía</option>';
+            municipio_options_str  += '<option value="Bobadilla">Bobadilla</option>';
+            municipio_options_str  += '<option value="Briones">Briones</option>';
+            municipio_options_str  += '<option value="Briñas">Briñas</option>';
+            municipio_options_str  += '<option value="Calahorra">Calahorra</option>';
+            municipio_options_str  += '<option value="Cenicero">Cenicero</option>';
+            municipio_options_str  += '<option value="Cervera del Río Alhama">Cervera del Río Alhama</option>';
+            municipio_options_str  += '<option value="Cordovín">Cordovín</option>';
+            municipio_options_str  += '<option value="Cuzcurrita de Río Tirón">Cuzcurrita de Río Tirón</option>';
+            municipio_options_str  += '<option value="Cárdenas">Cárdenas</option>';
+            municipio_options_str  += '<option value="El Redal">El Redal</option>';
+            municipio_options_str  += '<option value="El Villar de Arnedo">El Villar de Arnedo</option>';
+            municipio_options_str  += '<option value="Elciego">Elciego</option>';
+            municipio_options_str  += '<option value="Elvillar/Bilar">Elvillar/Bilar</option>';
+            municipio_options_str  += '<option value="Entrena">Entrena</option>';
+            municipio_options_str  += '<option value="Fuenmayor">Fuenmayor</option>';
+            municipio_options_str  += '<option value="Galbárruli">Galbárruli</option>';
+            municipio_options_str  += '<option value="Galilea">Galilea</option>';
+            municipio_options_str  += '<option value="Gimileo">Gimileo</option>';
+            municipio_options_str  += '<option value="Grávalos">Grávalos</option>';
+            municipio_options_str  += '<option value="Haro">Haro</option>';
+            municipio_options_str  += '<option value="Hervías">Hervías</option>';
+            municipio_options_str  += '<option value="Hormilla">Hormilla</option>';
+            municipio_options_str  += '<option value="Huércanos">Huércanos</option>';
+            municipio_options_str  += '<option value="Kripan">Kripan</option>';
+            municipio_options_str  += '<option value="Labastida/Bastida">Labastida/Bastida</option>';
+            municipio_options_str  += '<option value="Laguardia">Laguardia</option>';
+            municipio_options_str  += '<option value="Lagunilla del Jubera">Lagunilla del Jubera</option>';
+            municipio_options_str  += '<option value="Lanciego/Lantziego">Lanciego/Lantziego</option>';
+            municipio_options_str  += '<option value="Lapuebla de Labarca">Lapuebla de Labarca</option>';
+            municipio_options_str  += '<option value="Leza">Leza</option>';
+            municipio_options_str  += '<option value="Logroño">Logroño</option>';
+            municipio_options_str  += '<option value="Mendavia">Mendavia</option>';
+            municipio_options_str  += '<option value="Miranda de Ebro">Miranda de Ebro</option>';
+            municipio_options_str  += '<option value="Moreda de Álava/Moreda Araba">Moreda de Álava/Moreda Araba</option>';
+            municipio_options_str  += '<option value="Murillo de Río Leza">Murillo de Río Leza</option>';
+            municipio_options_str  += '<option value="Nalda">Nalda</option>';
+            municipio_options_str  += '<option value="Navaridas">Navaridas</option>';
+            municipio_options_str  += '<option value="Navarrete">Navarrete</option>';
+            municipio_options_str  += '<option value="Nájera">Nájera</option>';
+            municipio_options_str  += '<option value="Ollauri">Ollauri</option>';
+            municipio_options_str  += '<option value="Oyón-Oion">Oyón-Oion</option>';
+            municipio_options_str  += '<option value="Pradejón">Pradejón</option>';
+            municipio_options_str  += '<option value="Quel">Quel</option>';
+            municipio_options_str  += '<option value="Ribafrecha">Ribafrecha</option>';
+            municipio_options_str  += '<option value="Rincón de Soto">Rincón de Soto</option>';
+            municipio_options_str  += '<option value="Rodezno">Rodezno</option>';
+            municipio_options_str  += '<option value="Sajazarra">Sajazarra</option>';
+            municipio_options_str  += '<option value="Samaniego">Samaniego</option>';
+            municipio_options_str  += '<option value="San Adrián">San Adrián</option>';
+            municipio_options_str  += '<option value="San Asensio">San Asensio</option>';
+            municipio_options_str  += '<option value="San Vicente de la Sonsierra">San Vicente de la Sonsierra</option>';
+            municipio_options_str  += '<option value="Sojuela">Sojuela</option>';
+            municipio_options_str  += '<option value="Sotés">Sotés</option>';
+            municipio_options_str  += '<option value="Tirgo">Tirgo</option>';
+            municipio_options_str  += '<option value="Torremontalbo">Torremontalbo</option>';
+            municipio_options_str  += '<option value="Tudelilla">Tudelilla</option>';
+            municipio_options_str  += '<option value="Uruñuela">Uruñuela</option>';
+            municipio_options_str  += '<option value="Ventosa">Ventosa</option>';
+            municipio_options_str  += '<option value="Viana">Viana</option>';
+            municipio_options_str  += '<option value="Villabuena de Álava/Eskuernaga">Villabuena de Álava/Eskuernaga</option>';
+            municipio_options_str  += '<option value="Villamediana de Iregua">Villamediana de Iregua</option>';
+            municipio_options_str  += '<option value="Yécora/Iekora">Yécora/Iekora</option>';
+            municipio_options_str  += '<option value="Ábalos">Ábalos</option>';
+            sel_municipio.innerHTML = municipio_options_str;
+            div_municipio.appendChild(sel_municipio);
+            var lab_municipio = document.createElement('div');
+            lab_municipio.innerHTML = 'municipio';
+            lab_municipio.className = 'filterlabel';
+            div_municipio.appendChild(lab_municipio);
+            var reset_municipio = document.createElement('div');
+            reset_municipio.innerHTML = 'clear filter';
+            reset_municipio.className = 'filterlabel';
+            reset_municipio.onclick = function() {
+                var options = document.getElementById("sel_municipio").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_municipio.appendChild(reset_municipio);
+        </script>        
     </body>
 </html>
