@@ -11,9 +11,9 @@
         <link rel="stylesheet" href="css/L.Control.Locate.min.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/MarkerCluster.css">
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css">
         <link rel="stylesheet" href="css/leaflet-search.css">
-        <link rel="stylesheet" href="css/filter.css">
-<link rel="stylesheet" href="css/nouislider.min.css">
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <style>
         html, body, #map {
@@ -40,10 +40,8 @@
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
         <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
         <script src="js/leaflet-search.js"></script>
-        <script src="js/tailDT.js"></script>
-<script src="js/nouislider.min.js"></script>
-<script src="js/wNumb.js"></script>
         <script src="data/Bodegas_2.js"></script>
         <script>
         var highlightLayer;
@@ -264,10 +262,14 @@
                 return L.circleMarker(latlng, style_Bodegas_2_0(feature));
             },
         });
+        var cluster_Bodegas_2 = new L.MarkerClusterGroup({showCoverageOnHover: false,
+            spiderfyDistanceMultiplier: 2});
+        cluster_Bodegas_2.addLayer(layer_Bodegas_2);
+
         bounds_group.addLayer(layer_Bodegas_2);
-        map.addLayer(layer_Bodegas_2);
+        cluster_Bodegas_2.addTo(map);
         var overlaysTree = [
-            {label: '<img src="legend/Bodegas_2.png" /> Bodegas', layer: layer_Bodegas_2},
+            {label: '<img src="legend/Bodegas_2.png" /> Bodegas', layer: cluster_Bodegas_2},
             {label: "Mapa", layer: layer_Mapa_1, radioGroup: 'bm' },
             {label: "Ortofoto", layer: layer_Ortofoto_0, radioGroup: 'bm' },]
         var lay = L.control.layers.tree(null, overlaysTree,{
@@ -282,7 +284,7 @@
         lay.addTo(map);
         setBounds();
         map.addControl(new L.Control.Search({
-            layer: layer_Bodegas_2,
+            layer: cluster_Bodegas_2,
             initial: false,
             hideMarkerOnCollapse: true,
             propertyName: 'nombre'}));
@@ -291,228 +293,6 @@
         } else {
             document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
         }
-        var mapDiv = document.getElementById('map');
-        var row = document.createElement('div');
-        row.className="row";
-        row.id="all";
-        row.style.height = "100%";
-        var col1 = document.createElement('div');
-        col1.className="col9";
-        col1.id = "mapWindow";
-        col1.style.height = "99%";
-        col1.style.width = "80%";
-        col1.style.display = "inline-block";
-        var col2 = document.createElement('div');
-        col2.className="col3";
-        col2.id = "menu";
-        col2.style.display = "inline-block";
-        mapDiv.parentNode.insertBefore(row, mapDiv);
-        document.getElementById("all").appendChild(col1);
-        document.getElementById("all").appendChild(col2);
-        col1.appendChild(mapDiv)
-        var Filters = {"municipio": "str"};
-        function filterFunc() {
-          map.eachLayer(function(lyr){
-          if ("options" in lyr && "dataVar" in lyr["options"]){
-            features = this[lyr["options"]["dataVar"]].features.slice(0);
-            try{
-              for (key in Filters){
-                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
-                if (Filters[key] == "str" || Filters[key] == "bool"){
-                  var selection = [];
-                  var options = document.getElementById("sel_" + keyS).options
-                  for (var i=0; i < options.length; i++) {
-                    if (options[i].selected) selection.push(options[i].value);
-                  }
-                    try{
-                      if (key in features[0].properties){
-                        for (i = features.length - 1;
-                          i >= 0; --i){
-                          if (selection.indexOf(
-                          features[i].properties[key])<0
-                          && selection.length>0) {
-                          features.splice(i,1);
-                          }
-                        }
-                      }
-                    } catch(err){
-                  }
-                }
-                if (Filters[key] == "int"){
-                  sliderVals =  document.getElementById(
-                    "div_" + keyS).noUiSlider.get();
-                  try{
-                    if (key in features[0].properties){
-                    for (i = features.length - 1; i >= 0; --i){
-                      if (parseInt(features[i].properties[key])
-                          < sliderVals[0]
-                          || parseInt(features[i].properties[key])
-                          > sliderVals[1]){
-                            features.splice(i,1);
-                          }
-                        }
-                      }
-                    } catch(err){
-                    }
-                  }
-                if (Filters[key] == "real"){
-                  sliderVals =  document.getElementById(
-                    "div_" + keyS).noUiSlider.get();
-                  try{
-                    if (key in features[0].properties){
-                    for (i = features.length - 1; i >= 0; --i){
-                      if (features[i].properties[key]
-                          < sliderVals[0]
-                          || features[i].properties[key]
-                          > sliderVals[1]){
-                            features.splice(i,1);
-                          }
-                        }
-                      }
-                    } catch(err){
-                    }
-                  }
-                if (Filters[key] == "date"
-                  || Filters[key] == "datetime"
-                  || Filters[key] == "time"){
-                  try{
-                    if (key in features[0].properties){
-                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
-                      startdate = document.getElementById("dat_" +
-                        HTMLkey + "_date1").value.replace(" ", "T");
-                      enddate = document.getElementById("dat_" +
-                        HTMLkey + "_date2").value.replace(" ", "T");
-                      for (i = features.length - 1; i >= 0; --i){
-                        if (features[i].properties[key] < startdate
-                          || features[i].properties[key] > enddate){
-                          features.splice(i,1);
-                        }
-                      }
-                    }
-                  } catch(err){
-                  }
-                }
-              }
-            } catch(err){
-            }
-          this[lyr["options"]["layerName"]].clearLayers();
-          this[lyr["options"]["layerName"]].addData(features);
-          }
-          })
-        }
-            document.getElementById("menu").appendChild(
-                document.createElement("div"));
-            var div_municipio = document.createElement('div');
-            div_municipio.id = "div_municipio";
-            div_municipio.className= "filterselect";
-            document.getElementById("menu").appendChild(div_municipio);
-            sel_municipio = document.createElement('select');
-            sel_municipio.multiple = true;
-            sel_municipio.size = 10;
-            sel_municipio.id = "sel_municipio";
-            var municipio_options_str = "<option value='' unselected></option>";
-            sel_municipio.onchange = function(){filterFunc()};
-            municipio_options_str  += '<option value="Agoncillo">Agoncillo</option>';
-            municipio_options_str  += '<option value="Albelda de Iregua">Albelda de Iregua</option>';
-            municipio_options_str  += '<option value="Alberite">Alberite</option>';
-            municipio_options_str  += '<option value="Alcanadre">Alcanadre</option>';
-            municipio_options_str  += '<option value="Aldeanueva de Ebro">Aldeanueva de Ebro</option>';
-            municipio_options_str  += '<option value="Alesanco">Alesanco</option>';
-            municipio_options_str  += '<option value="Alfaro">Alfaro</option>';
-            municipio_options_str  += '<option value="Andosilla">Andosilla</option>';
-            municipio_options_str  += '<option value="Anguciana">Anguciana</option>';
-            municipio_options_str  += '<option value="Aras">Aras</option>';
-            municipio_options_str  += '<option value="Arenzana de Abajo">Arenzana de Abajo</option>';
-            municipio_options_str  += '<option value="Arnedo">Arnedo</option>';
-            municipio_options_str  += '<option value="Ausejo">Ausejo</option>';
-            municipio_options_str  += '<option value="Autol">Autol</option>';
-            municipio_options_str  += '<option value="Azagra">Azagra</option>';
-            municipio_options_str  += '<option value="Azofra">Azofra</option>';
-            municipio_options_str  += '<option value="Badarán">Badarán</option>';
-            municipio_options_str  += '<option value="Bargota">Bargota</option>';
-            municipio_options_str  += '<option value="Baños de Ebro/Mañueta">Baños de Ebro/Mañueta</option>';
-            municipio_options_str  += '<option value="Baños de Rioja">Baños de Rioja</option>';
-            municipio_options_str  += '<option value="Baños de Río Tobía">Baños de Río Tobía</option>';
-            municipio_options_str  += '<option value="Bobadilla">Bobadilla</option>';
-            municipio_options_str  += '<option value="Briones">Briones</option>';
-            municipio_options_str  += '<option value="Briñas">Briñas</option>';
-            municipio_options_str  += '<option value="Calahorra">Calahorra</option>';
-            municipio_options_str  += '<option value="Cenicero">Cenicero</option>';
-            municipio_options_str  += '<option value="Cervera del Río Alhama">Cervera del Río Alhama</option>';
-            municipio_options_str  += '<option value="Cordovín">Cordovín</option>';
-            municipio_options_str  += '<option value="Cuzcurrita de Río Tirón">Cuzcurrita de Río Tirón</option>';
-            municipio_options_str  += '<option value="Cárdenas">Cárdenas</option>';
-            municipio_options_str  += '<option value="El Redal">El Redal</option>';
-            municipio_options_str  += '<option value="El Villar de Arnedo">El Villar de Arnedo</option>';
-            municipio_options_str  += '<option value="Elciego">Elciego</option>';
-            municipio_options_str  += '<option value="Elvillar/Bilar">Elvillar/Bilar</option>';
-            municipio_options_str  += '<option value="Entrena">Entrena</option>';
-            municipio_options_str  += '<option value="Fuenmayor">Fuenmayor</option>';
-            municipio_options_str  += '<option value="Galbárruli">Galbárruli</option>';
-            municipio_options_str  += '<option value="Galilea">Galilea</option>';
-            municipio_options_str  += '<option value="Gimileo">Gimileo</option>';
-            municipio_options_str  += '<option value="Grávalos">Grávalos</option>';
-            municipio_options_str  += '<option value="Haro">Haro</option>';
-            municipio_options_str  += '<option value="Hervías">Hervías</option>';
-            municipio_options_str  += '<option value="Hormilla">Hormilla</option>';
-            municipio_options_str  += '<option value="Huércanos">Huércanos</option>';
-            municipio_options_str  += '<option value="Kripan">Kripan</option>';
-            municipio_options_str  += '<option value="Labastida/Bastida">Labastida/Bastida</option>';
-            municipio_options_str  += '<option value="Laguardia">Laguardia</option>';
-            municipio_options_str  += '<option value="Lagunilla del Jubera">Lagunilla del Jubera</option>';
-            municipio_options_str  += '<option value="Lanciego/Lantziego">Lanciego/Lantziego</option>';
-            municipio_options_str  += '<option value="Lapuebla de Labarca">Lapuebla de Labarca</option>';
-            municipio_options_str  += '<option value="Leza">Leza</option>';
-            municipio_options_str  += '<option value="Logroño">Logroño</option>';
-            municipio_options_str  += '<option value="Mendavia">Mendavia</option>';
-            municipio_options_str  += '<option value="Miranda de Ebro">Miranda de Ebro</option>';
-            municipio_options_str  += '<option value="Moreda de Álava/Moreda Araba">Moreda de Álava/Moreda Araba</option>';
-            municipio_options_str  += '<option value="Murillo de Río Leza">Murillo de Río Leza</option>';
-            municipio_options_str  += '<option value="Nalda">Nalda</option>';
-            municipio_options_str  += '<option value="Navaridas">Navaridas</option>';
-            municipio_options_str  += '<option value="Navarrete">Navarrete</option>';
-            municipio_options_str  += '<option value="Nájera">Nájera</option>';
-            municipio_options_str  += '<option value="Ollauri">Ollauri</option>';
-            municipio_options_str  += '<option value="Oyón-Oion">Oyón-Oion</option>';
-            municipio_options_str  += '<option value="Pradejón">Pradejón</option>';
-            municipio_options_str  += '<option value="Quel">Quel</option>';
-            municipio_options_str  += '<option value="Ribafrecha">Ribafrecha</option>';
-            municipio_options_str  += '<option value="Rincón de Soto">Rincón de Soto</option>';
-            municipio_options_str  += '<option value="Rodezno">Rodezno</option>';
-            municipio_options_str  += '<option value="Sajazarra">Sajazarra</option>';
-            municipio_options_str  += '<option value="Samaniego">Samaniego</option>';
-            municipio_options_str  += '<option value="San Adrián">San Adrián</option>';
-            municipio_options_str  += '<option value="San Asensio">San Asensio</option>';
-            municipio_options_str  += '<option value="San Vicente de la Sonsierra">San Vicente de la Sonsierra</option>';
-            municipio_options_str  += '<option value="Sojuela">Sojuela</option>';
-            municipio_options_str  += '<option value="Sotés">Sotés</option>';
-            municipio_options_str  += '<option value="Tirgo">Tirgo</option>';
-            municipio_options_str  += '<option value="Torremontalbo">Torremontalbo</option>';
-            municipio_options_str  += '<option value="Tudelilla">Tudelilla</option>';
-            municipio_options_str  += '<option value="Uruñuela">Uruñuela</option>';
-            municipio_options_str  += '<option value="Ventosa">Ventosa</option>';
-            municipio_options_str  += '<option value="Viana">Viana</option>';
-            municipio_options_str  += '<option value="Villabuena de Álava/Eskuernaga">Villabuena de Álava/Eskuernaga</option>';
-            municipio_options_str  += '<option value="Villamediana de Iregua">Villamediana de Iregua</option>';
-            municipio_options_str  += '<option value="Yécora/Iekora">Yécora/Iekora</option>';
-            municipio_options_str  += '<option value="Ábalos">Ábalos</option>';
-            sel_municipio.innerHTML = municipio_options_str;
-            div_municipio.appendChild(sel_municipio);
-            var lab_municipio = document.createElement('div');
-            lab_municipio.innerHTML = 'municipio';
-            lab_municipio.className = 'filterlabel';
-            div_municipio.appendChild(lab_municipio);
-            var reset_municipio = document.createElement('div');
-            reset_municipio.innerHTML = 'clear filter';
-            reset_municipio.className = 'filterlabel';
-            reset_municipio.onclick = function() {
-                var options = document.getElementById("sel_municipio").options;
-                for (var i=0; i < options.length; i++) {
-                    options[i].selected = false;
-                }
-                filterFunc();
-            };
-            div_municipio.appendChild(reset_municipio);
         </script>        
     </body>
 </html>
