@@ -191,10 +191,12 @@
             });
             var popupContent = '<table>\
                     <tr>\
-                        <td class="visible-with-data" id="nombre" colspan="2"><strong>nombre</strong><br />' + (feature.properties['nombre'] !== null ? autolinker.link(String(feature.properties['nombre']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">nombre</th>\
+                        <td>' + (feature.properties['nombre'] !== null ? autolinker.link(String(feature.properties['nombre']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td class="visible-with-data" id="telefono" colspan="2"><strong>telefono</strong><br />' + (feature.properties['telefono'] !== null ? autolinker.link(String(feature.properties['telefono']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">telefono</th>\
+                        <td>' + (feature.properties['telefono'] !== null ? autolinker.link(String(feature.properties['telefono']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <th scope="row">direccion</th>\
