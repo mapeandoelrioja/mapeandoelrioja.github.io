@@ -208,7 +208,7 @@
             return {
                 pane: 'pane_docarioja_zonas_2',
                 opacity: 1,
-                color: 'rgba(182,20,87,1.0)',
+                color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
@@ -264,7 +264,7 @@
             return {
                 pane: 'pane_docarioja_zona_3',
                 opacity: 1,
-                color: 'rgba(182,20,87,1.0)',
+                color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
@@ -300,8 +300,7 @@
             });
             var popupContent = '<table>\
                     <tr>\
-                        <th scope="row">paraje</th>\
-                        <td>' + (feature.properties['paraje'] !== null ? autolinker.link(String(feature.properties['paraje']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <td colspan="2">' + (feature.properties['paraje'] !== null ? autolinker.link(String(feature.properties['paraje']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <th scope="row">provincia</th>\
@@ -310,6 +309,22 @@
                     <tr>\
                         <th scope="row">municipio</th>\
                         <td>' + (feature.properties['municipio'] !== null ? autolinker.link(String(feature.properties['municipio']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">poligono</th>\
+                        <td>' + (feature.properties['poligono'] !== null ? autolinker.link(String(feature.properties['poligono']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">parcela</th>\
+                        <td>' + (feature.properties['parcela'] !== null ? autolinker.link(String(feature.properties['parcela']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">recinto</th>\
+                        <td>' + (feature.properties['recinto'] !== null ? autolinker.link(String(feature.properties['recinto']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">orden</th>\
+                        <td>' + (feature.properties['orden'] !== null ? autolinker.link(String(feature.properties['orden']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <th scope="row">expediente</th>\
