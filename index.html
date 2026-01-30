@@ -209,7 +209,7 @@
                 pane: 'pane_docarioja_zonas_2',
                 opacity: 1,
                 color: 'rgba(0,0,0,1.0)',
-                dashArray: '',
+                dashArray: '2.0,1.0',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1.0, 
@@ -300,7 +300,8 @@
             });
             var popupContent = '<table>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['paraje'] !== null ? autolinker.link(String(feature.properties['paraje']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">paraje</th>\
+                        <td>' + (feature.properties['paraje'] !== null ? autolinker.link(String(feature.properties['paraje']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <th scope="row">provincia</th>\
@@ -368,7 +369,8 @@
             });
             var popupContent = '<table>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['nombre'] !== null ? autolinker.link(String(feature.properties['nombre']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                        <th scope="row">nombre</th>\
+                        <td>' + (feature.properties['nombre'] !== null ? autolinker.link(String(feature.properties['nombre']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <th scope="row">telefono</th>\
