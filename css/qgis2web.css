@@ -38,6 +38,7 @@
         .leaflet-popup-content.media{
             width: auto!important;
             height: auto!important;
+            overflow: auto;
         }
         .leaflet-popup-content th {
             text-align: left;
@@ -117,7 +118,7 @@
             text-align: center !important;
             cursor: pointer;
         }
-        .search-button.fa.fa-search{
+        .search-button.fa.fa-binoculars{
             display: flex;
             justify-content: center;
             align-items: center;
